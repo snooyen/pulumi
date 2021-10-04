@@ -3,9 +3,14 @@ on:
   push:
     branches:
       - main
+
+defaults:
+  run:
+    working-directory: ./linode-lke-go
+
 jobs:
-  preview:
-    name: Update
+  pulumi-up:
+    name: Pulumi Up LKE-00
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -13,11 +18,9 @@ jobs:
         with:
           go-version: 1.14.x
       - run: go mod download
-        working-directory: ./linode-lke-go
       - uses: pulumi/actions@v3
         with:
           command: up
           stack-name: LKE-00
-        working-directory: ./linode-lke-go
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
