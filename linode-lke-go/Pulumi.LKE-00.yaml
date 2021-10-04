@@ -4,6 +4,6 @@ config:
   linode-lke-go:clusterArgs:
     Name: "LKE-00"
     K8sVersion: "1.21"
-    Region: "US-West"
+    Region: "us-west"
     Tags:
       - owner:snooyen
