@@ -1,0 +1,21 @@
+name: snooyen/pulumi PUSH
+on:
+  push:
+    branches:
+      - main
+jobs:
+  preview:
+    name: Update
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.14.x
+      - run: go mod download
+      - uses: pulumi/actions@v3
+        with:
+          command: up
+          stack-name: LKE-00
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
