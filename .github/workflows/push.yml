@@ -1,0 +1,27 @@
+name: snooyen/pulumi PUSH LKE-00
+on:
+  push:
+    branches:
+      - main
+
+defaults:
+  run:
+    working-directory: ./linode-lke-go
+
+jobs:
+  pulumi-up:
+    name: Pulumi Up LKE-00
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.17.x
+      - run: go mod download
+      - uses: pulumi/actions@v3
+        with:
+          command: up
+          stack-name: LKE-00
+          work-dir: ./linode-lke-go
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

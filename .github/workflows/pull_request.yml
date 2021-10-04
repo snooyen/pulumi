@@ -1,0 +1,27 @@
+name: snooyen/pulumi PR LKE-00
+on:
+  - pull_request
+
+defaults:
+  run:
+    working-directory: ./linode-lke-go
+
+jobs:
+  preview:
+    name: Preview LKE-00
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.17.x
+      - run: go mod download
+      - run: ls
+      - uses: pulumi/actions@v3
+        with:
+          command: preview
+          stack-name: LKE-00
+          comment-on-pr: true
+          work-dir: ./linode-lke-go
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
