@@ -20,7 +20,8 @@ jobs:
       - uses: pulumi/actions@v3
         with:
           command: preview
-          work-dir: ./linode-lke-go
           stack-name: LKE-00
+          comment-on-pr: true
+          work-dir: ./linode-lke-go
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
