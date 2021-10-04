@@ -19,6 +19,7 @@ jobs:
       - uses: pulumi/actions@v3
         with:
           command: preview
+          work-dir: ./linode-lke-go
           stack-name: LKE-00
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
