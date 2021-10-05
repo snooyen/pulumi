@@ -47,7 +47,6 @@ func main() {
 		}
 
 		// Initialize K8s Provider
-		//
 		kubeconfig := cluster.Kubeconfig.ApplyT(func(b64EncKubeconfig string) string {
 			data, _ := base64.StdEncoding.DecodeString(b64EncKubeconfig)
 			return string(data)
@@ -74,7 +73,6 @@ func main() {
 		if err != nil {
 			return err
 		}
-
 
 		// Outputs
 		ctx.Export("api_endpoints", cluster.ApiEndpoints)
