@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/base64"
+
 	"github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes"
 	"github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/kustomize"
 	"github.com/pulumi/pulumi-linode/sdk/v3/go/linode"
@@ -45,19 +47,29 @@ func main() {
 		}
 
 		// Initialize K8s Provider
+		//
+		kubeconfig := cluster.Kubeconfig.ApplyT(func(b64EncKubeconfig string) string {
+			data, _ := base64.StdEncoding.DecodeString(b64EncKubeconfig)
+			return string(data)
+		}).(pulumi.StringOutput)
+
 		k8s, err := kubernetes.NewProvider(ctx, clusterArgs.Name, &kubernetes.ProviderArgs{
-			Kubeconfig: cluster.Kubeconfig,
+			Kubeconfig: kubeconfig,
 		})
 		if err != nil {
 			return err
 		}
 
 		// Deploy Monitoring Stacks
-		_, err = kustomize.NewDirectory(ctx, "kube-prometheus",
+		_, err = kustomize.NewDirectory(
+			ctx,
+			"kube-prometheus",
 			kustomize.DirectoryArgs{
 				Directory: pulumi.String(monitoringManifests),
 			},
-			pulumi.Provider(k8s),
+			pulumi.ProviderMap(map[string]pulumi.ProviderResource{
+    			"kubernetes": k8s,
+			}),
 		)
 		if err != nil {
 			return err
