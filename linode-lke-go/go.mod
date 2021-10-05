@@ -3,6 +3,7 @@ module linode-lke-go
 go 1.17
 
 require (
+	github.com/pulumi/pulumi-kubernetes/sdk/v3 v3.7.3
 	github.com/pulumi/pulumi-linode/sdk/v3 v3.4.0
 	github.com/pulumi/pulumi/sdk/v3 v3.13.2
 )
@@ -33,7 +34,7 @@ require (
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/cobra v1.0.0 // indirect
-	github.com/spf13/pflag v1.0.3 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/src-d/gcfg v1.4.0 // indirect
 	github.com/texttheater/golang-levenshtein v0.0.0-20191208221605-eb6844b05fc6 // indirect
 	github.com/tweekmonster/luser v0.0.0-20161003172636-3fa38070dbd7 // indirect

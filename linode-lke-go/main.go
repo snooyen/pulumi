@@ -1,9 +1,15 @@
 package main
 
 import (
+	"github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes"
+	"github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/kustomize"
 	"github.com/pulumi/pulumi-linode/sdk/v3/go/linode"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
+)
+
+const (
+	monitoringManifests = `https://github.com/prometheus-operator/kube-prometheus/tree/release-0.9`
 )
 
 type LkeClusterArgs struct {
@@ -37,6 +43,26 @@ func main() {
 		if err != nil {
 			return err
 		}
+
+		// Initialize K8s Provider
+		k8s, err := kubernetes.NewProvider(ctx, clusterArgs.Name, &kubernetes.ProviderArgs{
+			Kubeconfig: cluster.Kubeconfig,
+		})
+		if err != nil {
+			return err
+		}
+
+		// Deploy Monitoring Stacks
+		_, err = kustomize.NewDirectory(ctx, "kube-prometheus",
+			kustomize.DirectoryArgs{
+				Directory: pulumi.String(monitoringManifests),
+			},
+			pulumi.Provider(k8s),
+		)
+		if err != nil {
+			return err
+		}
+
 
 		// Outputs
 		ctx.Export("api_endpoints", cluster.ApiEndpoints)
