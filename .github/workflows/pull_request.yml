@@ -25,3 +25,4 @@ jobs:
           work-dir: ./linode-lke-go
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          PULUMI_K8s_HELM_REPOSITORY_CACHE: ${{ env.RUNNER_TEMP }}
