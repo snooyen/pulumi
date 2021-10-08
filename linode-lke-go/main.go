@@ -66,7 +66,7 @@ func main() {
 				Directory: pulumi.String(monitoringManifests),
 			},
 			pulumi.ProviderMap(map[string]pulumi.ProviderResource{
-    			"kubernetes": k8s,
+				"kubernetes": k8s,
 			}),
 		)
 		if err != nil {
@@ -88,10 +88,16 @@ func main() {
 				Namespace:       pulumi.String(traefikNamespace),
 				CreateNamespace: pulumi.Bool(true),
 				Version:         pulumi.String(traefikChartVersion),
-				Values:          pulumi.Map{},
+				Values: pulumi.Map{
+					"ingressClass": pulumi.Map{
+						"enabled":            pulumi.Bool(true),
+						"isDefaultClass":     pulumi.Bool(true),
+						"fallbackApiVersion": pulumi.String("v1"),
+					},
+				},
 			},
 			pulumi.ProviderMap(map[string]pulumi.ProviderResource{
-    			"kubernetes": k8s,
+				"kubernetes": k8s,
 			}),
 		)
 		if err != nil {
