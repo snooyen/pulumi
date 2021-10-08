@@ -90,7 +90,9 @@ func main() {
 				Version:         pulumi.String(traefikChartVersion),
 				Values:          pulumi.Map{},
 			},
-			pulumi.Provider(k8s),
+			pulumi.ProviderMap(map[string]pulumi.ProviderResource{
+    			"kubernetes": k8s,
+			}),
 		)
 		if err != nil {
 			return err
