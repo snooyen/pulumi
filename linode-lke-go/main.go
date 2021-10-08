@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 
 	"github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes"
+	"github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/helm/v3"
 	"github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/kustomize"
 	"github.com/pulumi/pulumi-linode/sdk/v3/go/linode"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -59,12 +60,35 @@ func main() {
 			return err
 		}
 
-		// Deploy Monitoring Stacks
-		_, err = kustomize.NewDirectory(
-			ctx,
-			"kube-prometheus",
+		// Deploy kube-prometheus Monitoring Stack
+		_, err = kustomize.NewDirectory(ctx, "kube-prometheus",
 			kustomize.DirectoryArgs{
 				Directory: pulumi.String(monitoringManifests),
+			},
+			pulumi.ProviderMap(map[string]pulumi.ProviderResource{
+    			"kubernetes": k8s,
+			}),
+		)
+		if err != nil {
+			return err
+		}
+
+		// Deploy Traefik Ingress
+		traefikChart := "traefik"
+		traefikChartRepo := "https://helm.traefik.io/traefik"
+		traefikChartVersion := "10.3.6"
+		traefikNamespace := "traefik-v2"
+		_, err = helm.NewRelease(ctx, traefikChart,
+			&helm.ReleaseArgs{
+				Chart: pulumi.String(traefikChart),
+				RepositoryOpts: helm.RepositoryOptsArgs{
+					Repo: pulumi.String(traefikChartRepo),
+				},
+				Name:            pulumi.String(traefikChart),
+				Namespace:       pulumi.String(traefikNamespace),
+				CreateNamespace: pulumi.Bool(true),
+				Version:         pulumi.String(traefikChartVersion),
+				Values:          pulumi.Map{},
 			},
 			pulumi.ProviderMap(map[string]pulumi.ProviderResource{
     			"kubernetes": k8s,
