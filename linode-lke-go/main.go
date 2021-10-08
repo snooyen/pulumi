@@ -69,17 +69,20 @@ func main() {
 		traefikChartRepo := "https://helm.traefik.io/traefik"
 		traefikChartVersion := "10.3.6"
 		traefikNamespace := "traefik-v2"
-		_, err = helm.NewRelease(ctx, traefikChart, &helm.ReleaseArgs{
-			Chart: pulumi.String(traefikChart),
-			RepositoryOpts: helm.RepositoryOptsArgs{
-				Repo: pulumi.String(traefikChartRepo),
+		_, err = helm.NewRelease(ctx, traefikChart,
+			&helm.ReleaseArgs{
+				Chart: pulumi.String(traefikChart),
+				RepositoryOpts: helm.RepositoryOptsArgs{
+					Repo: pulumi.String(traefikChartRepo),
+				},
+				Name:            pulumi.String(traefikChart),
+				Namespace:       pulumi.String(traefikNamespace),
+				CreateNamespace: pulumi.Bool(true),
+				Version:         pulumi.String(traefikChartVersion),
+				Values:          pulumi.Map{},
 			},
-			Name:            pulumi.String(traefikChart),
-			Namespace:       pulumi.String(traefikNamespace),
-			CreateNamespace: pulumi.Bool(true),
-			Version:         pulumi.String(traefikChartVersion),
-			Values:          pulumi.Map{},
-		})
+			pulumi.Provider(k8s),
+		)
 		if err != nil {
 			return err
 		}
