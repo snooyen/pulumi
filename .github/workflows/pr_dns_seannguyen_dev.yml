@@ -1,14 +1,19 @@
-name: snooyen/pulumi PR LKE-00
+name: Pull Request linode-dns-go/seannguyen.dev
 on:
-  - pull_request
+  pull_request:
+    paths:
+      - 'linode-dns-go/**'
+      - '.github/workflows/pr_dns_seannguyen_dev.yml'
+    branches:
+      - main
 
 defaults:
   run:
-    working-directory: ./linode-lke-go
+    working-directory: ./linode-dns-go
 
 jobs:
   preview:
-    name: Preview LKE-00
+    name: Preview seannguyen.dev
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -20,9 +25,9 @@ jobs:
       - uses: pulumi/actions@v3
         with:
           command: preview
-          stack-name: LKE-00
+          stack-name: seannguyen.dev
           comment-on-pr: true
-          work-dir: ./linode-lke-go
+          work-dir: ./linode-dns-go
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           PULUMI_K8s_HELM_REPOSITORY_CACHE: ${{ env.RUNNER_TEMP }}

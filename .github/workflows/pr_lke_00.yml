@@ -1,6 +1,9 @@
-name: snooyen/pulumi PUSH LKE-00
+name: Pull Request linode-lke-go/LKE-00
 on:
-  push:
+  pull_request:
+    paths:
+      - 'linode-lke-go/**'
+      - '.github/workflows/pr_lke_00.yml'
     branches:
       - main
 
@@ -9,8 +12,8 @@ defaults:
     working-directory: ./linode-lke-go
 
 jobs:
-  pulumi-up:
-    name: Pulumi Up LKE-00
+  preview:
+    name: Preview LKE-00
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -18,11 +21,13 @@ jobs:
         with:
           go-version: 1.17.x
       - run: go mod download
+      - run: ls
       - uses: pulumi/actions@v3
         with:
-          command: up
+          command: preview
           stack-name: LKE-00
+          comment-on-pr: true
           work-dir: ./linode-lke-go
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          PULUMI_K8s_HELM_REPOSITORY_CACHE: ./linode-lke-go
+          PULUMI_K8s_HELM_REPOSITORY_CACHE: ${{ env.RUNNER_TEMP }}
