@@ -1,0 +1,31 @@
+name: Push linode-dns-go/seannguyen.dev
+on:
+  push:
+    paths:
+      - 'linode-dns-go/**'
+      - '.github/workflows/push_dns_seannguyen_dev.yml'
+    branches:
+      - main
+
+defaults:
+  run:
+    working-directory: ./linode-dns-go
+
+jobs:
+  pulumi-up:
+    name: Pulumi Up seannguyen.dev
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.17.x
+      - run: go mod download
+      - uses: pulumi/actions@v3
+        with:
+          command: up
+          stack-name: seannguyen.dev
+          work-dir: ./linode-dns-go
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          PULUMI_K8s_HELM_REPOSITORY_CACHE: ./linode-dns-go

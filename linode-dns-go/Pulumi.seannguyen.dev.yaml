@@ -1,0 +1,11 @@
+config:
+  linode:token:
+    secure: AAABAKIImF/dFrkhVzWkGOK+k3QsSYOopm/a2KsOzISvns256rSGt45FsgRUBVwqUFxurC+sEfpnhVuXR/VtnDoL2QRtOGQy0ab+eMW3N3FBoCAMxlNHglVIGVzwL9vq
+  masterDomain:args:
+    Domain: seannguyen.dev
+    Email: nguyensean95@gmail.com
+    Name: seannguyen.dev
+    Tags:
+    - owner:snooyen
+    - pulumi:project:linode-dns
+    - pulumi:stack:seannguyen.dev
