@@ -1,0 +1,3 @@
+name: linode-dns
+runtime: go
+description: Pulumi project manages Linode DNS
