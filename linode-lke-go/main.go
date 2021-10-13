@@ -73,6 +73,40 @@ func main() {
 			return err
 		}
 
+		// Deploy ExternalDNS
+		linodeToken := 	conf.RequireSecret("linodeDNSToken") // Linode API Token for DNS Managment
+		externalDNSChart := "external-dns"
+		externalDNSChartRepo := "https://kubernetes-sigs.github.io/external-dns"
+		externalDNSChartVersion := "1.3.2"
+		externalDNSNamespace := "kube-system"
+		_, err = helm.NewRelease(ctx, externalDNSChart,
+			&helm.ReleaseArgs{
+				Chart: pulumi.String(externalDNSChart),
+				RepositoryOpts: helm.RepositoryOptsArgs{
+					Repo: pulumi.String(externalDNSChartRepo),
+				},
+				Name:            pulumi.String(externalDNSChart),
+				Namespace:       pulumi.String(externalDNSNamespace),
+				CreateNamespace: pulumi.Bool(true),
+				Version:         pulumi.String(externalDNSChartVersion),
+				Values: pulumi.Map{
+					"provider": pulumi.String("linode"),
+					"env": pulumi.Array{
+						pulumi.Map{
+							"name":  pulumi.String("LINODE_TOKEN"),
+							"value": linodeToken,
+						},
+					},
+				},
+			},
+			pulumi.ProviderMap(map[string]pulumi.ProviderResource{
+				"kubernetes": k8s,
+			}),
+		)
+		if err != nil {
+			return err
+		}
+
 		// Deploy Traefik Ingress
 		traefikChart := "traefik"
 		traefikChartRepo := "https://helm.traefik.io/traefik"
