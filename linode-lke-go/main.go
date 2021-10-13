@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"encoding/base64"
 
 	"github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes"
@@ -74,7 +75,7 @@ func main() {
 		}
 
 		// Deploy ExternalDNS
-		linodeToken := 	conf.RequireSecret("linodeDNSToken") // Linode API Token for DNS Managment
+		linodeDNSToken := 	conf.RequireSecret("linodeDNSToken") // Linode API Token for DNS Managment
 		externalDNSChart := "external-dns"
 		externalDNSChartRepo := "https://kubernetes-sigs.github.io/external-dns"
 		externalDNSChartVersion := "1.3.2"
@@ -94,7 +95,7 @@ func main() {
 					"env": pulumi.Array{
 						pulumi.Map{
 							"name":  pulumi.String("LINODE_TOKEN"),
-							"value": linodeToken,
+							"value": linodeDNSToken,
 						},
 					},
 				},
@@ -112,6 +113,21 @@ func main() {
 		traefikChartRepo := "https://helm.traefik.io/traefik"
 		traefikChartVersion := "10.3.6"
 		traefikNamespace := "traefik-v2"
+		traefikWebSecureMainDomain := "seannguyen.dev"
+		traefikWebSecureWildCardSAN := "*.seannguyen.dev"
+		traefikLinodeACMECertResolver := struct {
+			Name string
+			Email string
+			Storage string
+			CAServer string
+			DNSChallengeProvider string
+		}{
+			Name: "linode",
+			Email: "nguyensean95@gmail.com",
+			Storage: "/data/acme.json",
+			CAServer: "https://acme-staging-v02.api.letsencrypt.org/directory",
+			DNSChallengeProvider: "linode",
+		}
 		_, err = helm.NewRelease(ctx, traefikChart,
 			&helm.ReleaseArgs{
 				Chart: pulumi.String(traefikChart),
@@ -123,10 +139,51 @@ func main() {
 				CreateNamespace: pulumi.Bool(true),
 				Version:         pulumi.String(traefikChartVersion),
 				Values: pulumi.Map{
+					"additionalArguments": pulumi.StringArray{
+						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.email=%s", traefikLinodeACMECertResolver.Name, traefikLinodeACMECertResolver.Email)),
+						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.storage=%s", traefikLinodeACMECertResolver.Name, traefikLinodeACMECertResolver.Storage)),
+						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.caserver=%s", traefikLinodeACMECertResolver.Name, traefikLinodeACMECertResolver.CAServer)),
+						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.tlschallenge=false", traefikLinodeACMECertResolver.Name)),
+						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.httpchallenge=false", traefikLinodeACMECertResolver.Name)),
+						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.dnschallenge=true", traefikLinodeACMECertResolver.Name)),
+						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.dnschallenge.provider=%s", traefikLinodeACMECertResolver.Name, traefikLinodeACMECertResolver.DNSChallengeProvider)),
+					},
+					"persistence": pulumi.Map{
+						"enabled": pulumi.Bool(true),
+					},
+					"ports": pulumi.Map{
+						"websecure": pulumi.Map{
+							"tls": pulumi.Map{
+								"enabled": pulumi.Bool(true),
+								"certResolver": pulumi.String(traefikLinodeACMECertResolver.Name),
+								"domains": pulumi.MapArray{
+									pulumi.Map{
+										"main": pulumi.String(traefikWebSecureMainDomain),
+										"sans": pulumi.StringArray{
+											pulumi.String(traefikWebSecureWildCardSAN),
+										},
+									},
+								},
+							},
+						},
+					},
+					"providers": pulumi.Map{
+						"kubernetesIngress": pulumi.Map{
+							"publishedService": pulumi.Map{
+								"enabled": pulumi.Bool(true),
+							},
+						},
+					},
 					"ingressClass": pulumi.Map{
 						"enabled":            pulumi.Bool(true),
 						"isDefaultClass":     pulumi.Bool(true),
 						"fallbackApiVersion": pulumi.String("v1"),
+					},
+					"env": pulumi.Array{
+						pulumi.Map{
+							"name":  pulumi.String("LINODE_TOKEN"),
+							"value": linodeDNSToken,
+						},
 					},
 				},
 			},
