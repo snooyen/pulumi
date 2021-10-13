@@ -139,6 +139,27 @@ func main() {
 				CreateNamespace: pulumi.Bool(true),
 				Version:         pulumi.String(traefikChartVersion),
 				Values: pulumi.Map{
+				    // The "volume-permissions" init container is required if you run into permission issues.
+				    // Related issue: https://github.com/traefik/traefik/issues/6972
+					"deployment": pulumi.Map{
+						"initContainers": pulumi.Array{
+							pulumi.Map{
+								"name": pulumi.String("volume-permissions"),
+								"image": pulumi.String("busybox:1.31.1"),
+								"command": pulumi.StringArray{
+									pulumi.String("sh"),
+									pulumi.String("-c"),
+									pulumi.String("chmod -Rv 600 /data/*"),
+								},
+								"volumeMounts": pulumi.Array{
+									pulumi.Map{
+										"name": pulumi.String("data"),
+										"mountPath": pulumi.String("/data"),
+									},
+								},
+							},
+						},
+					},
 					"additionalArguments": pulumi.StringArray{
 						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.email=%s", traefikLinodeACMECertResolver.Name, traefikLinodeACMECertResolver.Email)),
 						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.storage=%s", traefikLinodeACMECertResolver.Name, traefikLinodeACMECertResolver.Storage)),
