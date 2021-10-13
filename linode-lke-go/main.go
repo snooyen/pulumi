@@ -73,8 +73,35 @@ func main() {
 			return err
 		}
 
+		// Deploy cert-manager
+		certManagerChart := "cert-manager"
+		certManagerChartRepo := "https://charts.jetstack.io"
+		certManagerChartVersion := "1.5.4"
+		certManagerNamespace := "cert-manager"
+		_, err = helm.NewRelease(ctx, certManagerChart,
+			&helm.ReleaseArgs{
+				Chart: pulumi.String(certManagerChart),
+				RepositoryOpts: helm.RepositoryOptsArgs{
+					Repo: pulumi.String(certManagerChartRepo),
+				},
+				Name:            pulumi.String(certManagerChart),
+				Namespace:       pulumi.String(certManagerNamespace),
+				CreateNamespace: pulumi.Bool(true),
+				Version:         pulumi.String(certManagerChartVersion),
+				Values: pulumi.Map{
+					"installCRDs": pulumi.Bool(true),
+				},
+			},
+			pulumi.ProviderMap(map[string]pulumi.ProviderResource{
+				"kubernetes": k8s,
+			}),
+		)
+		if err != nil {
+			return err
+		}
+
 		// Deploy ExternalDNS
-		linodeToken := 	conf.RequireSecret("linodeDNSToken") // Linode API Token for DNS Managment
+		linodeDNSToken := 	conf.RequireSecret("linodeDNSToken") // Linode API Token for DNS Managment
 		externalDNSChart := "external-dns"
 		externalDNSChartRepo := "https://kubernetes-sigs.github.io/external-dns"
 		externalDNSChartVersion := "1.3.2"
@@ -94,7 +121,7 @@ func main() {
 					"env": pulumi.Array{
 						pulumi.Map{
 							"name":  pulumi.String("LINODE_TOKEN"),
-							"value": linodeToken,
+							"value": linodeDNSToken,
 						},
 					},
 				},
@@ -123,6 +150,13 @@ func main() {
 				CreateNamespace: pulumi.Bool(true),
 				Version:         pulumi.String(traefikChartVersion),
 				Values: pulumi.Map{
+					"ports": pulumi.Map{
+						"websecure": pulumi.Map{
+							"tls": pulumi.Map{
+								"enabled": pulumi.Bool(true),
+							},
+						},
+					},
 					"ingressClass": pulumi.Map{
 						"enabled":            pulumi.Bool(true),
 						"isDefaultClass":     pulumi.Bool(true),
