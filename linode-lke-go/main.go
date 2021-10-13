@@ -125,7 +125,7 @@ func main() {
 			Name: "linode",
 			Email: "nguyensean95@gmail.com",
 			Storage: "/data/acme.json",
-			CAServer: "https://acme-staging-v02.api.letsencrypt.org/directory",
+			CAServer: "https://acme-v02.api.letsencrypt.org/directory",
 			DNSChallengeProvider: "linode",
 		}
 		_, err = helm.NewRelease(ctx, traefikChart,
