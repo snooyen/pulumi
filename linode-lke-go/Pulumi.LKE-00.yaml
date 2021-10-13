@@ -1,9 +1,11 @@
 config:
+  linode-lke-go:clusterArgs:
+    K8sVersion: "1.21"
+    Name: LKE-00
+    Region: us-west
+    Tags:
+    - owner:snooyen
+  linode-lke-go:linodeDNSToken:
+    secure: AAABALI2rWCj8Pn7KYZiwF0P9ePZ7mCRWfHzvZwwE8UmViBKXS8QBohsXzVGWb5KhaXfvJm7/o9PlUHQPyEadrElYjN7aUh0INU7jLXw+kvohta98a7AIJDnI/YmaEI4
   linode:token:
     secure: AAABAIIQX5mcelMQcLO9QkOfmIXDNCzdtfMxQgVoZlCvWyfzYlMe9YdSJSiza/CGer+67AReUNjywEin3LJ0hG5g9Ob3kVP0MPpIVopiGCQyNaUCQv8sn69cBDPUvUS1
-  linode-lke-go:clusterArgs:
-    Name: "LKE-00"
-    K8sVersion: "1.21"
-    Region: "us-west"
-    Tags:
-      - owner:snooyen
