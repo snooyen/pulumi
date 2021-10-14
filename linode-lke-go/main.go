@@ -122,7 +122,7 @@ func main() {
 			CAServer string
 			DNSChallengeProvider string
 		}{
-			Name: "linode",
+			Name: "linodeACME",
 			Email: "nguyensean95@gmail.com",
 			Storage: "/data/acme.json",
 			CAServer: "https://acme-v02.api.letsencrypt.org/directory",
@@ -161,6 +161,7 @@ func main() {
 						},
 					},
 					"additionalArguments": pulumi.StringArray{
+						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s=true", traefikLinodeACMECertResolver.Name)),
 						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.email=%s", traefikLinodeACMECertResolver.Name, traefikLinodeACMECertResolver.Email)),
 						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.storage=%s", traefikLinodeACMECertResolver.Name, traefikLinodeACMECertResolver.Storage)),
 						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.caserver=%s", traefikLinodeACMECertResolver.Name, traefikLinodeACMECertResolver.CAServer)),
@@ -168,6 +169,8 @@ func main() {
 						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.httpchallenge=false", traefikLinodeACMECertResolver.Name)),
 						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.dnschallenge=true", traefikLinodeACMECertResolver.Name)),
 						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.dnschallenge.provider=%s", traefikLinodeACMECertResolver.Name, traefikLinodeACMECertResolver.DNSChallengeProvider)),
+						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.dnschallenge.delaybeforecheck=5", traefikLinodeACMECertResolver.Name)),
+						pulumi.String(fmt.Sprintf("--certificatesresolvers.%s.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53", traefikLinodeACMECertResolver.Name)),
 					},
 					"persistence": pulumi.Map{
 						"enabled": pulumi.Bool(true),
@@ -199,6 +202,14 @@ func main() {
 						"enabled":            pulumi.Bool(true),
 						"isDefaultClass":     pulumi.Bool(true),
 						"fallbackApiVersion": pulumi.String("v1"),
+					},
+					"logs": pulumi.Map{
+						"general": pulumi.Map{
+							"level": pulumi.String("ERROR"),
+						},
+						"access": pulumi.Map{
+							"enabled": pulumi.Bool(true),
+						},
 					},
 					"env": pulumi.Array{
 						pulumi.Map{
