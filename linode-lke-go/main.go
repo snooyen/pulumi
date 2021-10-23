@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"encoding/base64"
+	"fmt"
 
 	"github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes"
 	"github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/helm/v3"
@@ -74,8 +74,31 @@ func main() {
 			return err
 		}
 
+		// Deploy Loki & Promtail
+		lokiChart := "loki-stack"
+		lokiChartRepo := "https://grafana.github.io/helm-charts"
+		lokiNamespace := "logging"
+		_, err = helm.NewRelease(ctx, lokiChart,
+			&helm.ReleaseArgs{
+				Chart: pulumi.String(lokiChart),
+				RepositoryOpts: helm.RepositoryOptsArgs{
+					Repo: pulumi.String(lokiChartRepo),
+				},
+				Name:            pulumi.String(lokiChart),
+				Namespace:       pulumi.String(lokiNamespace),
+				CreateNamespace: pulumi.Bool(true),
+				Values:          pulumi.Map{},
+			},
+			pulumi.ProviderMap(map[string]pulumi.ProviderResource{
+				"kubernetes": k8s,
+			}),
+		)
+		if err != nil {
+			return err
+		}
+
 		// Deploy ExternalDNS
-		linodeDNSToken := 	conf.RequireSecret("linodeDNSToken") // Linode API Token for DNS Managment
+		linodeDNSToken := conf.RequireSecret("linodeDNSToken") // Linode API Token for DNS Managment
 		externalDNSChart := "external-dns"
 		externalDNSChartRepo := "https://kubernetes-sigs.github.io/external-dns"
 		externalDNSChartVersion := "1.3.2"
@@ -116,16 +139,16 @@ func main() {
 		traefikWebSecureMainDomain := "seannguyen.dev"
 		traefikWebSecureWildCardSAN := "*.seannguyen.dev"
 		traefikLinodeACMECertResolver := struct {
-			Name string
-			Email string
-			Storage string
-			CAServer string
+			Name                 string
+			Email                string
+			Storage              string
+			CAServer             string
 			DNSChallengeProvider string
 		}{
-			Name: "linodeACME",
-			Email: "nguyensean95@gmail.com",
-			Storage: "/data/acme.json",
-			CAServer: "https://acme-v02.api.letsencrypt.org/directory",
+			Name:                 "linodeACME",
+			Email:                "nguyensean95@gmail.com",
+			Storage:              "/data/acme.json",
+			CAServer:             "https://acme-v02.api.letsencrypt.org/directory",
 			DNSChallengeProvider: "linode",
 		}
 		_, err = helm.NewRelease(ctx, traefikChart,
@@ -139,12 +162,12 @@ func main() {
 				CreateNamespace: pulumi.Bool(true),
 				Version:         pulumi.String(traefikChartVersion),
 				Values: pulumi.Map{
-				    // The "volume-permissions" init container is required if you run into permission issues.
-				    // Related issue: https://github.com/traefik/traefik/issues/6972
+					// The "volume-permissions" init container is required if you run into permission issues.
+					// Related issue: https://github.com/traefik/traefik/issues/6972
 					"deployment": pulumi.Map{
 						"initContainers": pulumi.Array{
 							pulumi.Map{
-								"name": pulumi.String("volume-permissions"),
+								"name":  pulumi.String("volume-permissions"),
 								"image": pulumi.String("busybox:1.31.1"),
 								"command": pulumi.StringArray{
 									pulumi.String("sh"),
@@ -153,7 +176,7 @@ func main() {
 								},
 								"volumeMounts": pulumi.Array{
 									pulumi.Map{
-										"name": pulumi.String("data"),
+										"name":      pulumi.String("data"),
 										"mountPath": pulumi.String("/data"),
 									},
 								},
@@ -178,7 +201,7 @@ func main() {
 					"ports": pulumi.Map{
 						"websecure": pulumi.Map{
 							"tls": pulumi.Map{
-								"enabled": pulumi.Bool(true),
+								"enabled":      pulumi.Bool(true),
 								"certResolver": pulumi.String(traefikLinodeACMECertResolver.Name),
 								"domains": pulumi.MapArray{
 									pulumi.Map{
