@@ -250,6 +250,19 @@ func main() {
 			return err
 		}
 
+		// Grafana Ingress
+		_, err = kustomize.NewDirectory(ctx, "grafana",
+			kustomize.DirectoryArgs{
+				Directory: pulumi.String("./manifests/base"),
+			},
+			pulumi.ProviderMap(map[string]pulumi.ProviderResource{
+				"kubernetes": k8s,
+			}),
+		)
+		if err != nil {
+			return err
+		}
+
 		// Outputs
 		ctx.Export("api_endpoints", cluster.ApiEndpoints)
 		ctx.Export("kubeconfig", cluster.Kubeconfig)
